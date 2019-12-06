@@ -2200,7 +2200,7 @@ def get_operator_fn(op):
     '>' : operator.gt,
     '>=' : operator.ge,
     '<=' : operator.le,
-    }[op]        
+    }[op]
 
 def query(command: str):
     '''
@@ -2210,7 +2210,7 @@ def query(command: str):
     print("User wants to query {}".format(command))
     ## check if the select statement is correct or not
     operator_list = ['=','>','<','>=','<=']
-    
+
     query_match = "select\s+(.*?)\s*(?i)from\s+(.*?)\s*((?i)where\s(.*?)\s*)?;"
     if re.match(query_match, command):
         stmt = sqlparse.parse(command)[0]
@@ -2223,22 +2223,22 @@ def query(command: str):
 #         print(where_clause,"\t",tablename,"\t",columns)
         return str(where_clause[0]),str(where_clause[1]),res[0], tablename, columns
     else:
-        
+
         return -1,-1,-1,-1,-1
-        
+
 
 
 def select_from(SQL):
-    
+
     where_op, where_value, oper, table_name, columns =  query(SQL)
-    
+
     column_list = get_column_names_from_catalog(table_name)
-    
+
     index = column_list.index(where_op)
-        
+
     if where_op == -1:
         print("Enter correct query")
-        
+
     flag = False
     for node in read_all_pages_in_file(table_name + ".tbl"):
         if node['is_leaf'] :
@@ -2250,7 +2250,7 @@ def select_from(SQL):
                 else:
                     op1 = where_value
                     op2 = "'"+str(data[index - 1]) + "'"
-                
+
                 if get_operator_fn(oper)(op1, op2):
                     print(cell)
                     break
@@ -2301,6 +2301,21 @@ def check_valid(file_name, pages=None, page_num=0, is_table=None):
     else:
         return
 
+def print_cells(table_name, cells):
+    # cells = get_all_table_cells(table_name)
+    columns = get_column_names_from_catalog(table_name)
+    cells = sorted(cells,key = lambda x: x['rowid'])
+    str_f1 = '{:^7} |{:^10}         |{:^12}     |{:^7} |{:^10}| {:^7}| {:^8} | {:^10}'
+    print('\033[1m' + str_f1.format(*columns))
+    print('-'*116)
+    str_f2 = '{:''<17}  |{:<16} |{:''<9} | {:^14} | {:^10} | {:^8} | {:^10}'
+    for cell in cells:
+        rowid = str(cell['rowid'])
+        new_list = [str(x) for x in list(cell['data'])]
+        print('\033[0m' + '{0:4}'.format(cell['rowid'])+'    |'+ str_f2.format(*(new_list)))
+    print('-'*116)
+
+    return None
 
 #############################################################################
 PAGE_SIZE = 512
